@@ -1,0 +1,43 @@
+#include "totvs.ch"
+#include "tlpp-core.th"
+
+NAMESPACE backoffice.cadastros
+
+Class testController
+    public method new() constructor
+
+    @get('/api/backoffice/consulta/cnpj/:cnpj')
+    public method consultaCnpj() 
+
+EndClass
+
+Method new() Class testController
+Return self
+
+Method consultaCnpj() Class testController
+
+    Local xRest     := oRest
+    Local lRpc      := .F.
+
+    Private jData   := jsonObject():New()
+    Private jHeader := xRest:getHeaderRequest()
+    Private jBody   := xRest:getBodyRequest()
+    Private jPath   := xRest:getPathParamsRequest()
+
+    jHeader['Content-Type'] := 'application/json;charset=cp1252'
+    xRest:setHeaderResponse(jHeader)
+
+    if type('cEmpAnt') <> 'C'
+        rpcSetEnv('99', 01)
+        lRpc := .T.
+    EndIf
+
+    cCnpj           := jPath['cnpj']
+    cRetorno        := fwNoAccent(decodeutf8(httpget('https://www.receitasws.com.br/v1/cnpj/' + cCnpj), 'cp1252'))
+
+    oRest:setResponse(cRetorno)
+
+    If lRpc
+        rpcClearEnv()
+    EndIf
+Return .T.
